@@ -54,5 +54,36 @@
 
         </div>
     </div>
+
+    <script>
+        //入口函数
+        $(function () {
+            /*
+                1.页面加载,ajax请求个人信息
+            */
+            $.ajax({
+                url: 'http://localhost:8080/api/v1/admin/user/info',
+                type: 'get',
+                dataType: 'json',
+                success: function (backData) {
+                    console.log(backData);
+                    //渲染个人信息数据
+                    $('.user_info>span').text('欢迎  ' + backData.data.nickname);
+                    $('.user_info>img').attr('src',backData.data.userPic);
+                    $('.user_center_link>img').attr('src',backData.data.userPic);
+                }
+            });
+
+            //2.退出登录
+            $('.logout').click(function(){
+                //2.1删除localstorage中的token
+                localStorage.removeItem('token');
+                //2.2跳转登录页面
+                window.location.href = './login.html';
+            });
+
+        })
+    </script>
 </body>
+
 </html>
