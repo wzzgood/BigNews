@@ -30,15 +30,18 @@
             <div class="level01"><a href="#"><i class="iconfont icon-icon-article"></i><span>文章管理</span><b
                         class="iconfont icon-arrowdownl"></b></a></div>
             <ul class="level02">
-                <li><a href="#" target="main_frame"><i class="iconfont icon-previewright"></i><span>文章列表</span></a></li>
-                <li><a href="#" target="main_frame"><i class="iconfont icon-previewright"></i><span>发表文章</span></a></li>
-                <li><a href="#" target="main_frame"><i class="iconfont icon-previewright"></i><span>文章类别管理</span></a>
+                <li><a href="./article_list.html" target="main_frame"><i
+                            class="iconfont icon-previewright"></i><span>文章列表</span></a></li>
+                <li><a href="./article_release.html" target="main_frame"><i
+                            class="iconfont icon-previewright"></i><span>发表文章</span></a></li>
+                <li><a href="article_category.html" target="main_frame"><i
+                            class="iconfont icon-previewright"></i><span>文章类别管理</span></a>
                 </li>
             </ul>
 
-            <div class="level01"><a href="#" target="main_frame"><i
+            <div class="level01"><a href="./comment_list.html" target="main_frame"><i
                         class="iconfont icon-comment"></i><span>评论管理</span></a></div>
-            <div class="level01" id="user"><a href="#" target="main_frame"><i
+            <div class="level01" id="user"><a href="./user.html" target="main_frame"><i
                         class="iconfont icon-user"></i><span>个人中心</span></a></div>
         </div>
         <!-- 顶部栏 -->
@@ -51,10 +54,12 @@
         </div>
         <!-- 右侧主体内容 -->
         <div class="main" id="main_body">
-
+            <!-- 右侧添加iframe,默认src指向首页图标页面main_count.html -->
+            <iframe src="./main_count.html" frameborder="0" name="main_frame" width="100%" height="100%"></iframe>
         </div>
     </div>
 
+    <script src="./libs/http.js"></script>
     <script>
         //入口函数
         $(function () {
@@ -69,19 +74,56 @@
                     console.log(backData);
                     //渲染个人信息数据
                     $('.user_info>span').text('欢迎  ' + backData.data.nickname);
-                    $('.user_info>img').attr('src',backData.data.userPic);
-                    $('.user_center_link>img').attr('src',backData.data.userPic);
+                    $('.user_info>img').attr('src', backData.data.userPic);
+                    $('.user_center_link>img').attr('src', backData.data.userPic);
                 }
             });
 
             //2.退出登录
-            $('.logout').click(function(){
+            $('.logout').click(function () {
                 //2.1删除localstorage中的token
                 localStorage.removeItem('token');
                 //2.2跳转登录页面
                 window.location.href = './login.html';
             });
+            //3.一级菜单点击事件
+            $('.level01').click(function () {
+                //3.1排他思想修改样式
+                $(this).addClass('active').siblings().removeClass('active');
+                //3.2如果是文章管理,二级菜单滑动效果
+                if ($(this).index() == 1) {
+                    //(1)上下滑动切换效果
+                    $('.level02').slideToggle();
+                    //(2)箭头旋转切换效果
+                    $(this).find('b').toggleClass('rotate0');
+                    //(3)点击文章管理：默认触发 第一个li元素的点击事件
+                    /* 
+                    jq对象的 click() 方法 ： 只能触发 自己注册的点击事件   (等价于  DOM对象.onclick()  )
+                    DOM原生对象  click()方法： 同时触发 默认事件 + 自己注册的事件 
+                    */
+                    $('.level02>li:eq(0) a')[0].click();
+                } else {//点击其他一级菜单，取消二级菜单高亮
+                    $('.level02>li').removeClass('active');
+                }
+            });
 
+            /* 4.二级菜单点击事件 */
+            $('.level02>li').click(function(){
+                //4.1 排他思想修改样式
+                $(this).addClass('active').siblings().removeClass('active');
+            });
+
+            /*5.个人中心修改与查询*/
+            //5.1 页面一加载,ajax请求个人详情,渲染页面
+            $.ajax({
+                url:BigNew.user_detail,
+                type:'get',
+                dataType:'json',
+                success: function(backData){
+                    console.log(backData);
+                    
+                }
+            });
         })
     </script>
 </body>
