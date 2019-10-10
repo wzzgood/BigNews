@@ -112,18 +112,7 @@
                 //4.1 排他思想修改样式
                 $(this).addClass('active').siblings().removeClass('active');
             });
-
-            /*5.个人中心修改与查询*/
-            //5.1 页面一加载,ajax请求个人详情,渲染页面
-            $.ajax({
-                url:BigNew.user_detail,
-                type:'get',
-                dataType:'json',
-                success: function(backData){
-                    console.log(backData);
-                    
-                }
-            });
+            
         })
     </script>
 </body>

@@ -68,6 +68,25 @@
             </form>
         </div>
     </div>
+
+
+    <script src="./libs/http.js"></script>
+    <script>
+        /*5.个人中心修改与查询*/
+            //5.1 页面一加载,ajax请求个人详情,渲染页面
+            $.ajax({
+                url:BigNew.user_detail,
+                type:'get',
+                dataType:'json',
+                success: function(backData){
+                    console.log(backData);
+                    for(var key in backData.data) {
+                        $('input.' + key).val(backData.data[key]);
+                    }
+                    $('img.user_pic').attr('src',backData.data.userPic);
+                }
+            });
+    </script>
 </body>
 
 </html>
