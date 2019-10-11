@@ -196,7 +196,28 @@
             4.3 ajax发送请求
             4.4 响应之后刷新页面 
             */
-            
+           // 4.1 给删除按钮注册委托事件（动态添加的元素需要注册动态事件）
+            $('.table>tbody').on('click','.delete',function(){
+                // 4.3 ajax发送请求
+                $.ajax({
+                    url:BigNew.article_delete,
+                    type:'post',
+                    dataType:'json',
+                    data:{
+                        id:$(this).attr('data-id')
+                    },
+                    success: function(backData){
+                        console.log(backData);
+                        if(backData.code == 204){
+                            alert('删除成功');
+                            window.location.reload();
+                        }else{
+                            alert(backData.msg)
+                            
+                        }
+                    }
+                });
+            })
 
 
 
