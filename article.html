@@ -209,6 +209,27 @@
     <script src="./js/template-web.js"></script>
     <script src="./js/jquery-1.12.4.min.js"></script>
 
+    <script>
+        $(function(){
+            //1.获取其他页面跳转过来传递的参数:文章id
+            var id = window.location.href.split('=')[1];
+            console.log(id);
+
+            //2.加载文章详情
+            $.ajax({
+                url:'http://localhost:8080/api/v1/index/article',
+                type:'get',
+                dataType:'json',
+                data:{id:id},
+                success: function(backData){
+                    console.log(backData);
+                    
+                }
+            });
+            
+        })
+    </script>
+
 </body>
 
 </html>
