@@ -12,9 +12,13 @@
   <link rel="stylesheet" href="css/main.css">
   <script src="./libs/jquery-1.12.4.min.js"></script>
   <script src="./libs/template-web.js"></script>
+  <!-- 分页插件 -->
+  <script src="./libs/jquery.twbsPagination.js"></script>
 </head>
 
 <body>
+
+
   <div class="container-fluid">
     <div class="common_title">
       评论列表
@@ -32,7 +36,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr>
+          <!-- <tr>
             <td>小周</td>
             <td>这是一条测试评论，欢迎光临</td>
             <td>《世界，你好》</td>
@@ -137,12 +141,14 @@
             <td class="text-center">
               <a href="javascript:editTr( 'rejected',11 );" class="btn btn-warning btn-xs">拒绝</a>
               <a href="javascript:editTr( 'trashed',11 );" class="btn btn-danger btn-xs">删除</a>
-            </td>
-          </tr>
+            </td> -->
+          <!-- </tr> -->
         </tbody>
       </table>
       <div class="row text-center">
-        <ul class="pagination pagination-sm">
+        <!-- 分页插件HTML -->
+        <ul id="pagination" class="pagination-sm"></ul>
+        <!-- <ul class="pagination pagination-sm">
           <li class="page-item first disabled"><a href="#" class="page-link">首页</a></li>
           <li class="page-item prev disabled"><a href="#" class="page-link">上一页</a></li>
           <li class="page-item active"><a href="#" class="page-link">1</a></li>
@@ -155,11 +161,155 @@
           <li class="page-item next"><a href="#" class="page-link">下一页</a></li>
           <li class="page-item last"><a href="#" class="page-link">尾页</a></li>
         </ul>
-        <ul id="pagination" class="pagination-sm"></ul>
+        <ul id="pagination" class="pagination-sm"></ul> -->
       </div>
 
     </div>
   </div>
+
+  <script id="comment_list" type="text/html">
+    {{each data.data v}}
+    <tr>
+      <td>{{v.author}}</td>
+      <td>{{v.content}}</td>
+      <td>{{v.title}}</td>
+      <td>{{v.date}}</td>
+      <td>{{v.state}}</td>
+      <td class="text-center">
+        {{if v.state == '已通过'}}
+        <a href="javascript:void(0);;" class="btn btn-warning btn-xs btn-reject" data-id="{{v.id}}">拒绝</a>
+        {{else if v.state=='待审核'}}
+        <a href="javascript:void(0);;" class="btn btn-success btn-xs btn-pass" data-id="{{v.id}}">批准</a>
+        {{/if}}
+        <a href="javascript:void(0);;" class="btn btn-danger btn-xs btn-delete" data-id="{{v.id}}">删除</a>
+      </td>
+    </tr>
+    {{/each}}
+  </script>
+
+  <script src="./libs/http.js"></script>
+
+  <script>
+    $(function () {
+      // 1.页面一加载就搜索评论
+      getCommentList(1, true);
+
+
+      // 分页插件
+
+      /**
+      * @description:文章评论搜索
+      * @param {type} currentPage :当前页
+      * @return: 
+      */
+
+      function getCommentList(currengPage, flag) {
+        $.ajax({
+          url: BigNew.comment_list,
+          type: 'get',
+          dataType: 'json',
+          data: {
+            page: currengPage,
+            perpage: 10
+          },
+          success: function (backData) {
+            console.log(backData);
+            //数据响应之后 模板引擎渲染页面
+            $('.table>tbody').html(template('comment_list', backData));
+            //加载分页
+            if (flag) {
+              loadPagination(backData.data.totalPage, currengPage);
+            }
+          }
+        });
+      }
+
+
+      /**
+      * @description:加载分页组件
+      * @param {type} totalPages 总页数
+      * @param {type} startPage  当前页数
+      * @return: 
+      */
+      function loadPagination(totalPage, startPage) {
+        //(1)先销毁已经存在的插件
+        $('#pagination').twbsPagination('destroy');
+        //(2)初始化新的插件
+        $('#pagination').twbsPagination({
+          totalPages: totalPage,
+          visiblePages: 6,
+          startPage: startPage,
+          first: '首页',
+          prev: '上一页',
+          next: '下一页',
+          last: '尾页',
+          onPageClick: function (event, page) {
+            $('#page-content').text('Page ' + page);
+            //点击页码加载数据
+            getCommentList(page);
+          }
+        });
+      }
+
+      /* 3. 通过 拒绝 删除
+      注意点： ajax动态添加的元素，需要注册委托事件
+      */
+      //3.1 通过
+      $('.table>tbody').on('click','.btn-pass',function(){
+        $.ajax({
+          url:BigNew.comment_pass,
+          type:'post',
+          dataType:'json',
+          data:{
+            id:$(this).attr('data-id')
+          },
+          success: function(backData){
+            console.log(backData);
+            if(backData.code == 200) {
+              alert('已通过');
+              window.location.reload();
+            }
+          }
+        });
+      })
+      //3.2 拒绝
+      $('.table>tbody').on('click','.btn-reject',function(){
+        $.ajax({
+          url:BigNew.comment_reject,
+          type:'post',
+          dataType:'json',
+          data:{
+            id:$(this).attr('data-id')
+          },
+          success: function(backData){
+            console.log(backData);
+            if(backData.code == 200) {
+              alert('已拒绝');
+              window.location.reload();
+            }
+          }
+        });
+      })
+      //3.1 删除
+      $('.table>tbody').on('click','.btn-delete',function(){
+        $.ajax({
+          url:BigNew.comment_delete,
+          type:'post',
+          dataType:'json',
+          data:{
+            id:$(this).attr('data-id')
+          },
+          success: function(backData){
+            console.log(backData);
+            if(backData.code == 200) {
+              alert('已删除');
+              window.location.reload();
+            }
+          }
+        });
+      })
+    })
+  </script>
 </body>
 
 </html>
