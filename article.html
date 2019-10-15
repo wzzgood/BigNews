@@ -93,9 +93,9 @@
                     <input type="submit" name="" value="评 论" class="comment_sub"></div>
             </form>
 
-            <div class="comment_count">
+            <!-- <div class="comment_count">
                 4条评论
-            </div>
+            </div> -->
 
             <div class="comment_list_con">
                 <div class="comment_detail_list">
@@ -209,6 +209,22 @@
     <script src="./js/template-web.js"></script>
     <script src="./js/jquery-1.12.4.min.js"></script>
 
+    <!-- 01-评论列表 -->
+    <script id="com_list" type="text/html">
+        <div class="comment_count">
+            {{data.length}}条评论
+        </div>
+        {{each data v}}
+        <div class="comment_detail_list">
+            <div class="person_pic fl"> {{ v.author.substr(0,1) }}</div>
+            <div class="name_time fl"><b>{{ v.author }}</b><span>{{ v.date }}</span></div>
+            <div class="comment_text fl">
+                {{ v.content }}
+            </div>
+        </div>
+        {{/each}}
+    </script>
+
     <script>
         $(function(){
             //1.获取其他页面跳转过来传递的参数:文章id
@@ -217,16 +233,69 @@
 
             //2.加载文章详情
             $.ajax({
-                url:'http://localhost:8080/api/v1/index/article',
+                url: 'http://localhost:8080/api/v1/index/article',
+                type: 'get',
+                dataType: 'json',
+                data: { id: id },
+                success: function (backData) {
+                    console.log(backData);
+                    //数据响应之后 渲染页面
+                    $('.article_title').text(backData.data.title);
+
+                    $('.article_info').text(backData.data.author +
+                        ' 发布于 ' + backData.data.date +
+                        '  分类: ' + backData.data.category +
+                        '  阅读: ( ' + backData.data.read + ')' +
+                        '评论: (' + backData.data.comments + ')'
+                    );
+
+                    $('.article_con').html(backData.data.content);
+                }
+            });
+
+            //3.加载评论列表
+            $.ajax({
+                url:'http://localhost:8080/api/v1/index/get_comment',
                 type:'get',
                 dataType:'json',
-                data:{id:id},
+                data:{articleId:id},
                 success: function(backData){
                     console.log(backData);
-                    
+                    //渲染页面
+                    $('.comment_list_con').html(template('com_list',backData))
                 }
             });
             
+
+            //4.评论按钮点击事件(表单按钮阻止默认行为)
+            $('.comment_sub').click(function(e){
+                //禁用表单默认提交事件
+                e.preventDefault();
+                //非空判断
+                if($('.comment_name').val().trim().length == 0 || $('.comment_input').val().trim().length == 0){
+                    alert('请输入用户名和评论内容');
+                    return;
+                }
+                $.ajax({
+                    url:'http://localhost:8080/api/v1/index/post_comment',
+                    type:'post',
+                    dataType:'json',
+                    data:{
+                        articleId:id,
+                        author:$('.comment_name').val(),
+                        content:$('.comment_input').val(),
+                    },
+                    success: function(backData){
+                        console.log(backData);
+                        //渲染页面
+                        if(backData.code == 201){
+                            alert('评论成功');
+                            window.location.reload();
+                        }
+                        
+                    }
+                });
+            });
         })
     </script>
 
